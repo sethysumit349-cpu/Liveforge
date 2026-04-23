@@ -281,6 +281,35 @@ body{font-family:var(--sans);color:var(--text);display:flex;flex-direction:colum
 .sb-sep{width:1px;height:14px;background:rgba(255,255,255,.2)}
 .sb-right{margin-left:auto}
 
+/* ══ SEARCH PANEL ══ */
+.cm-search {
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  padding:8px 12px;background:var(--surface)!important;
+  border-bottom:1px solid var(--border)!important;
+}
+.cm-search label{font-size:12px;font-family:var(--mono);color:var(--text2);display:flex;align-items:center;gap:4px}
+.cm-search input[type=text]{
+  height:26px;padding:0 8px;border-radius:5px;
+  background:var(--bg)!important;border:1px solid var(--border2)!important;
+  color:var(--text)!important;font-family:var(--mono);font-size:12px;
+  outline:none;width:160px;
+}
+.cm-search input[type=text]:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent-glow)}
+.cm-search input[type=checkbox]{accent-color:var(--accent)}
+.cm-search button{
+  height:26px;padding:0 10px;border-radius:5px;font-size:12px;
+  font-family:var(--mono);font-weight:600;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text2);cursor:pointer;transition:.15s;
+}
+.cm-search button:hover{background:var(--border2);color:var(--text)}
+.cm-search button[name=close]{
+  background:transparent;border-color:transparent;
+  color:var(--text3);margin-left:auto;font-size:14px;
+}
+.cm-search button[name=close]:hover{color:var(--red);background:transparent}
+.cm-searchMatch{background:rgba(245,158,11,0.30)!important;border-radius:2px}
+.cm-searchMatch.cm-searchMatch-selected{background:rgba(59,130,246,0.50)!important}
+
 /* ══ TOAST ══ */
 #toast{
   position:fixed;bottom:36px;left:50%;
@@ -311,6 +340,14 @@ body{font-family:var(--sans);color:var(--text);display:flex;flex-direction:colum
         <line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/>
       </svg>
       Format
+    </button>
+
+    <!-- Search -->
+    <button class="tb-btn tb-ghost" id="btn-search" title="Find / Replace (Ctrl+F)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Search
     </button>
 
     <!-- Import -->
@@ -485,7 +522,7 @@ import {
   highlightActiveLineGutter, dropCursor
 } from 'https://esm.sh/@codemirror/view@6';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from 'https://esm.sh/@codemirror/commands@6';
-import { searchKeymap, highlightSelectionMatches } from 'https://esm.sh/@codemirror/search@6';
+import { searchKeymap, highlightSelectionMatches, openSearchPanel, search } from 'https://esm.sh/@codemirror/search@6';
 import { autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap } from 'https://esm.sh/@codemirror/autocomplete@6';
 import { foldGutter, foldKeymap, indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, StreamLanguage } from 'https://esm.sh/@codemirror/language@6';
 import { html } from 'https://esm.sh/@codemirror/lang-html@6';
@@ -667,6 +704,7 @@ const state = EditorState.create({
     highlightActiveLine(),
     highlightActiveLineGutter(),
     highlightSelectionMatches(),
+    search({ top: true }),
     lineNumbers(),
     // Theme
     oneDark,
@@ -748,6 +786,16 @@ function updateCursorInfo(v) {
 // ─────────────────────────────────────────────────────────────
 // Toolbar actions
 // ─────────────────────────────────────────────────────────────
+// Search
+document.getElementById('btn-search').addEventListener('click', () => {
+  openSearchPanel(view);
+  // Focus the search input after a short delay so panel renders first
+  setTimeout(() => {
+    const inp = document.querySelector('.cm-search input[type=text]');
+    if (inp) inp.focus();
+  }, 50);
+});
+
 // Run
 document.getElementById('btn-run').addEventListener('click', runPreview);
 
